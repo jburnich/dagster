@@ -111,7 +111,7 @@ def _execute_run_command_body(
     instance.report_engine_event(
         "Started process for run (pid: {pid}).".format(pid=pid),
         pipeline_run,
-        EngineEventData.in_process(pid, marker_end="cli_api_subprocess_init"),
+        EngineEventData.in_process(pid),
     )
 
     run_worker_failed = 0
@@ -213,7 +213,7 @@ def _resume_run_command_body(
     instance.report_engine_event(
         "Started process for resuming pipeline (pid: {pid}).".format(pid=pid),
         pipeline_run,
-        EngineEventData.in_process(pid, marker_end="cli_api_subprocess_init"),
+        EngineEventData.in_process(pid),
     )
 
     run_worker_failed = False
