@@ -1,5 +1,5 @@
 import sys
-from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple
+from typing import Iterator, List, Optional, Tuple, cast
 
 import structlog
 
@@ -13,8 +13,6 @@ from dagster.core.workspace.workspace import IWorkspace
 from dagster.utils.error import serializable_error_info_from_exc_info
 
 logger = structlog.get_logger("automatic_reexecution_consumer")
-
-DEFAULT_MAX_RETRIES = 0
 
 
 def filter_runs_to_should_retry(
@@ -153,7 +151,9 @@ def consume_new_runs_for_automatic_reexecution(
     """
 
     for run, retry_number in filter_runs_to_should_retry(
-        [run_record.pipeline_run for run_record in run_records], instance, DEFAULT_MAX_RETRIES
+        [cast(DagsterRun, run_record.pipeline_run) for run_record in run_records],
+        instance,
+        instance.run_retries_max_retries,
     ):
 
         yield
