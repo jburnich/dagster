@@ -4,9 +4,9 @@ from dagster import _check as check
 from dagster.utils import merge_dicts
 
 from ...config import Shape
-from ..errors import DagsterInvalidInvocationError
 from ..definitions import ResourceDefinition
 from ..definitions.resource_requirement import ResourceAddable
+from ..errors import DagsterInvalidConfigError, DagsterInvalidInvocationError
 
 T = TypeVar("T", bound=ResourceAddable)
 
@@ -56,8 +56,8 @@ def with_resources(
 
 
     """
-    from dagster.core.storage.fs_io_manager import fs_io_manager
     from dagster.config.validate import validate_config
+    from dagster.core.storage.fs_io_manager import fs_io_manager
 
     check.mapping_param(resource_defs, "resource_defs")
     resource_config_by_key = check.opt_mapping_param(
@@ -78,6 +78,12 @@ def with_resources(
 
             outer_config_shape = Shape({"config": resource_def.get_config_field()})
             config_evr = validate_config(outer_config_shape, resource_config)
+            if not config_evr.success:
+                raise DagsterInvalidConfigError(
+                    f"Error when applying config for resource with key '{key}' ",
+                    config_evr.errors,
+                    resource_config,
+                )
             resource_defs[key] = resource_defs[key].configured(resource_config["config"])
 
     transformed_defs: List[T] = []
